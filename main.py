@@ -1,5 +1,10 @@
 from dataprocessmanager import processAllData
-from gitmanager import get_data_from_github
+from gitmanager import get_data_from_github, getDataFromGithub
+from paths import DEFAULT_COUNTRIES_LIST
+# from app2 import *
+from uimanager import startApp
 
-get_data_from_github()
-processAllData()
+
+getDataFromGithub()
+processAllData(DEFAULT_COUNTRIES_LIST)
+startApp()

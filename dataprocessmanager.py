@@ -23,9 +23,7 @@ def createPopulationFile():
     global populationDict
     populationDict = dict(zip(countryList, populationList))
     
-    # print(populationDict)
-
-def createVaccinationFile():
+def createVaccinationFile(desiredCountriesList = []):
     dataFrame = pd.read_csv(VACCINATION_RAW_FILE_PATH)
 
     di = (dataFrame.groupby('location')['date','people_vaccinated']
@@ -39,23 +37,28 @@ def createVaccinationFile():
         dateList = []
         valuesList = []
         countryName = eachCountry
+
+        if (desiredCountriesList != []) and (countryName not in desiredCountriesList):
+            continue
+
         if countryName not in populationDict:
             continue
         countryPopulation = populationDict[eachCountry]
-        # print(countryPopulation)
+
         for i in range(len(di[eachCountry])):
             dateList.append(di[eachCountry][i][0])
             valuesList.append(di[eachCountry][i][1])
 
         listOfDf.append( pd.DataFrame(
         {
-            'Date'      :      dateList,
+            'date'      :      dateList,
              countryName:      valuesList
         }))
         
+        
         listOfDfWithPopulation.append( pd.DataFrame(
         {
-            'Date'      :       dateList,
+            'date'      :       dateList,
              countryName:       100*np.array(valuesList)/countryPopulation #percentage of population vaccinated
         }))
 
@@ -67,7 +70,7 @@ def createVaccinationFile():
     pd.concat(listOfDfWithPopulation,   axis=0, ignore_index=True).to_csv(VACCINATION_POP_PROCESSED_FILE_PATH, sep = ';')
 
   
-def createCasesDeathsFiles():
+def createCasesDeathsFiles(desiredCountriesList = []):
     dataFrame = pd.read_csv(CASES_DEATHS_RAW_FILE_PATH)
     di = (dataFrame.groupby('location')['date', 'total_cases', 'total_deaths']
     .apply(lambda x: dict(zip(range(len(x)),x.values.tolist())))
@@ -85,11 +88,15 @@ def createCasesDeathsFiles():
         deathsList = []
         
         countryName = eachCountry
+        if (desiredCountriesList != []) and (countryName not in desiredCountriesList):
+            continue
+
         if countryName not in populationDict:
             #skip countries that don't have the population provided in this data set
             continue
+
         countryPopulation = populationDict[eachCountry]
-        # print(countryPopulation)
+
         for i in range(len(di[eachCountry])):
             dateList.append(di[eachCountry][i][0])
             casesList.append(di[eachCountry][i][1])
@@ -97,25 +104,25 @@ def createCasesDeathsFiles():
 
         listOfCasesDf.append( pd.DataFrame(
         {
-            'Date'      :   dateList,
+            'date'      :   dateList,
             countryName :   casesList
         }))
         
         listOfCasesDfWithPopulation.append( pd.DataFrame(
         {
-            'Date'      :   dateList,
+            'date'      :   dateList,
             countryName :   np.array(casesList)/countryPopulation #percentage of population vaccinated
         }))
 
         listOfDeathsDf.append( pd.DataFrame(
         {
-            'Date'      :   dateList,
+            'date'      :   dateList,
             countryName :   deathsList
         }))
         
         listOfDeathsDfWithPopulation.append( pd.DataFrame(
         {
-            'Date'      :   dateList,
+            'date'      :   dateList,
             countryName :   np.array(deathsList)/countryPopulation #percentage of population vaccinated
         }))
 
@@ -129,7 +136,9 @@ def createCasesDeathsFiles():
     pd.concat(listOfDeathsDf,               axis=0, ignore_index=True).to_csv(DEATHS_PROCESSED_FILE_PATH,       sep = ';')
     pd.concat(listOfDeathsDfWithPopulation, axis=0, ignore_index=True).to_csv(DEATHS_POP_PROCESSED_FILE_PATH,   sep = ';')
 
-def processAllData():
+def processAllData(desiredCountriesList = []):
+    print("DataProcessManager: Starting Data Processing")
     createPopulationFile()
-    createVaccinationFile()
-    createCasesDeathsFiles()
+    createVaccinationFile(desiredCountriesList)
+    createCasesDeathsFiles(desiredCountriesList)
+    print("DataProcessManager: Finished Data Processing")

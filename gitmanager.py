@@ -1,14 +1,8 @@
-
 import subprocess
 import os
-
-import pandas as pd
-import numpy as np
+import git
 from paths import GIT_PULL, REPO_LOCAL_FILE_PATH
-from datetime import datetime
 
-import requests
-import json
 # REPO_LOCAL_FILE_PATH = './data/raw/covid-19-data/'
 
 def get_data_from_github():
@@ -24,5 +18,11 @@ def get_data_from_github():
 
     print("Error : " + str(error))
     print("out : " + str(out))
+
+def getDataFromGithub():
+    repoPath = git.Repo(REPO_LOCAL_FILE_PATH[2:])
+    print("GitManager: Pulling Repository")
+    repoPath.remotes.origin.pull()
+    print("GitManager: Pulling Repository Finished")
 
 # get_data_from_github()
