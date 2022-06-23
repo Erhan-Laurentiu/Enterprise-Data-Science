@@ -18,4 +18,4 @@ DEATHS_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'deaths_flat_table.csv'
 DEATHS_POP_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/deaths_pop_flat_table.csv'
 
 
-DEFAULT_COUNTRIES_LIST = ["Germany","Spain","Italy"]
+DEFAULT_COUNTRIES_LIST = ["Germany","France","Italy"]
