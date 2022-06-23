@@ -3,8 +3,6 @@ import os
 import git
 from paths import GIT_PULL, REPO_LOCAL_FILE_PATH
 
-# REPO_LOCAL_FILE_PATH = './data/raw/covid-19-data/'
-
 def get_data_from_github():
     ''' Get data by a git pull request, the source code has to be pulled first
         Result is stored in the predifined csv structure
@@ -24,5 +22,3 @@ def getDataFromGithub():
     print("GitManager: Pulling Repository")
     repoPath.remotes.origin.pull()
     print("GitManager: Pulling Repository Finished")
-
-# get_data_from_github()

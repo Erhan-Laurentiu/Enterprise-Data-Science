@@ -10,6 +10,7 @@ app = dash.Dash(
 
 offcanvas = html.Div(
     [
+        html.H2(html.Center("COVID-19 Dashboard")),
         dbc.Button("☰", id="open-offcanvas", n_clicks=0),
         dbc.Offcanvas(
             dbc.ListGroup(
