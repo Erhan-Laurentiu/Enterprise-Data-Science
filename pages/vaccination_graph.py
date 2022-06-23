@@ -86,5 +86,5 @@ def update_figure(country_list):
             'type'  : 'log',
             'range' : '[1.1,5.5]'
         },
-        title='Cases Evolution of CoronaVirus'
+        title='Vaccination Rate Evolution of CoronaVirus'
     )}
