@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
+from sympy import false
 from paths import *
-
+from filter import filterData
 populationDict = {}
 
 def createPopulationFile():
@@ -96,7 +97,7 @@ def createCasesDeathsFiles(desiredCountriesList = []):
         for i in range(len(di[eachCountry])):
             dateList.append(di[eachCountry][i][0])
             casesList.append(di[eachCountry][i][1])
-            deathsList.append(di[eachCountry][i][1])
+            deathsList.append(di[eachCountry][i][2])
 
         listOfCasesDf.append( pd.DataFrame(
         {
@@ -132,9 +133,12 @@ def createCasesDeathsFiles(desiredCountriesList = []):
     pd.concat(listOfDeathsDf,               axis=0, ignore_index=True).to_csv(DEATHS_PROCESSED_FILE_PATH,       sep = ';')
     pd.concat(listOfDeathsDfWithPopulation, axis=0, ignore_index=True).to_csv(DEATHS_POP_PROCESSED_FILE_PATH,   sep = ';')
 
-def processAllData(desiredCountriesList = []):
+
+def processAllData(desiredCountriesList = [], filtering = False):
     print("DataProcessManager: Starting Data Processing")
     createPopulationFile()
-    createVaccinationFile(desiredCountriesList)
     createCasesDeathsFiles(desiredCountriesList)
+    createVaccinationFile(desiredCountriesList)
+    if filtering == True:
+        filterData()
     print("DataProcessManager: Finished Data Processing")

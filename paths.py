@@ -14,6 +14,12 @@ CASES_DEATHS_RAW_FILE_PATH = './data/raw/covid-19-data/public/data/jhu/full_data
 
 CASES_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'cases_flat_table.csv'
 CASES_POP_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/cases_pop_flat_table.csv'
+CASES_INTERMEDIARY_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'cases_intermediary_flat_table.csv'
+CASES_FILTERING_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'cases_filtering_flat_table.csv'
+CASES_FILTERED_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/cases_filtered_flat_table.csv'
+CASES_DR_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/cases_dr_flat_table.csv'
+CASES_FILTERED_DR_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/cases_filtered_dr_flat_table.csv'
+
 DEATHS_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'deaths_flat_table.csv'
 DEATHS_POP_PROCESSED_FILE_PATH = PROCESSED_DATA_FILE_PATH + 'ui/deaths_pop_flat_table.csv'
 

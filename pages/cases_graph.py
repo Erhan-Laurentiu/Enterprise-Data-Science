@@ -5,11 +5,32 @@ import pandas as pd
 import plotly.graph_objects as go
 import sys
 sys.path.append('../EnterpriseDataScienceProject/')
-from paths import POPULATION_PROCESSED_FILE_PATH, CASES_POP_PROCESSED_FILE_PATH, DEFAULT_COUNTRIES_LIST
+from paths import *
 from dataprocessmanager import processAllData
+
+CONFIRMED = 'confirmed'
+CONFIRMED_POP = 'confirmed_percentage'
+CONFIRMED_FILTERED = 'confirmed_filtered'
+CONFIRMED_DR= 'confirmed_DR'
+CONFIRMED_FILTERED_DR = 'confirmed_filtered_DR'
+
+#  {'label': 'Timeline Confirmed ', 'value': 'confirmed'},
+#         {'label': 'Timeline Confirmed Percentage', 'value': 'confirmed_percentage'},
+#         {'label': 'Timeline Confirmed Filtered', 'value': 'confirmed_filtered'},
+#         {'label': 'Timeline Doubling Rate', 'value': 'confirmed_DR'},
+#         {'label': 'Timeline Doubling Rate Filtered', 'value': 'confirmed_filtered_DR'},
+
+timelineToCSVMap = {CONFIRMED: CASES_PROCESSED_FILE_PATH, 
+                    CONFIRMED_POP: CASES_POP_PROCESSED_FILE_PATH,
+                    CONFIRMED_FILTERED: CASES_FILTERED_PROCESSED_FILE_PATH,
+                    CONFIRMED_DR: CASES_DR_PROCESSED_FILE_PATH,
+                    CONFIRMED_FILTERED_DR: CASES_FILTERED_DR_PROCESSED_FILE_PATH
+                    }
 
 
 cachedList = DEFAULT_COUNTRIES_LIST
+# timelineValue = 'confirmed'
+prevTimelineValue =''
 
 register_page(__name__, path="/")
 
@@ -17,7 +38,7 @@ df=pd.read_csv(POPULATION_PROCESSED_FILE_PATH, sep = ';')
 supportedCountriesList = df['Country']
 populationDict = dict(zip(supportedCountriesList, df['Population']))
 
-df_plot=pd.read_csv(CASES_POP_PROCESSED_FILE_PATH, sep = ';')
+df_plot=pd.read_csv(CASES_PROCESSED_FILE_PATH, sep = ';')
 
 fig = go.Figure()
 
@@ -39,33 +60,56 @@ layout = html.Div([
         placeholder='Select the country...',
         clearable=True
     ),
+     html.Label('Select Timeline',style={"margin-top": "1vw"}),
+
+    dcc.Dropdown(
+    id='doubling_time',
+    options=[
+        {'label': 'Timeline Confirmed ', 'value': 'confirmed'},
+        {'label': 'Timeline Confirmed Percentage', 'value': 'confirmed_percentage'},
+        {'label': 'Timeline Confirmed Filtered', 'value': 'confirmed_filtered'},
+        {'label': 'Timeline Doubling Rate', 'value': 'confirmed_DR'},
+        {'label': 'Timeline Doubling Rate Filtered', 'value': 'confirmed_filtered_DR'},
+    ],
+    value='confirmed',
+    searchable=False,
+    multi=False
+    ),
     dcc.Graph(
         figure=fig, 
         id='cases_main_window_slope',  
-        style={'width':'99vw','height':'80vh'})
-        
+        style={'width':'99vw','height':'70vh'})
 ])
 
 
 @callback(
     Output('cases_main_window_slope', 'figure'),
-    [Input('cases_country_drop_down', 'value')]
+    [Input('cases_country_drop_down', 'value'),
+    Input('doubling_time', 'value')]
 )
-def update_figure(country_list):
-    traces = []
-
+def update_figure(country_list, timelineValue):
     global cachedList
     global df_plot
 
-    for each in country_list:
-        if not each in cachedList:
-            cachedList = list( dict.fromkeys(country_list))
-            print(cachedList)
+    newCountryList = list( dict.fromkeys(country_list))
+    traces = []
+    
+    if cachedList != newCountryList:
+        cachedList = newCountryList
+        print(cachedList)
+        if timelineValue == CONFIRMED or timelineValue == CONFIRMED_POP:
             processAllData(cachedList)
-            df_plot = pd.read_csv(CASES_POP_PROCESSED_FILE_PATH, sep = ';')
-            break
+        else:
+            processAllData(cachedList, True)
+    else:
+        if timelineValue == CONFIRMED or timelineValue == CONFIRMED_POP:
+            processAllData(cachedList)
+        else:
+            processAllData(cachedList, True)   
+        
+    df_plot = pd.read_csv(timelineToCSVMap[timelineValue], sep = ';')
 
-    for each in country_list:
+    for each in cachedList:
         traces.append(dict(x=df_plot.date,
                             y=df_plot[each],
                             mode='markers+lines',
