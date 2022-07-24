@@ -1,7 +1,7 @@
 import subprocess
 import os
 import git
-from paths import GIT_PULL, REPO_LOCAL_FILE_PATH
+from constantdata import GIT_PULL, REPO_LOCAL_FILE_PATH
 
 def get_data_from_github():
     ''' Get data by a git pull request, the source code has to be pulled first
@@ -19,6 +19,6 @@ def get_data_from_github():
 
 def getDataFromGithub():
     repoPath = git.Repo(REPO_LOCAL_FILE_PATH[2:])
-    print("GitManager: Pulling Repository")
+    print("GitManager::getDataFromGithub: Pulling Repository")
     repoPath.remotes.origin.pull()
-    print("GitManager: Pulling Repository Finished")
+    print("GitManager::getDataFromGithub: Pulling Repository Finished")
