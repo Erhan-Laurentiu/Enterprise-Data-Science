@@ -7,18 +7,25 @@ import sys
 sys.path.append('../EnterpriseDataScienceProject/')
 from paths import *
 from dataprocessmanager import processAllData
+import pandas as pd
+import numpy as np
+
+import dash
+dash.__version__
+import dash_core_components as dcc
+import dash_html_components as html
+from dash.dependencies import Input, Output,State
+
+import plotly.graph_objects as go
 
 CONFIRMED = 'confirmed'
 CONFIRMED_POP = 'confirmed_percentage'
 CONFIRMED_FILTERED = 'confirmed_filtered'
 CONFIRMED_DR= 'confirmed_DR'
 CONFIRMED_FILTERED_DR = 'confirmed_filtered_DR'
+print(os.getcwd())
+df_input_large=pd.read_csv('data/processed/COVID_final_set.csv',sep=';')
 
-#  {'label': 'Timeline Confirmed ', 'value': 'confirmed'},
-#         {'label': 'Timeline Confirmed Percentage', 'value': 'confirmed_percentage'},
-#         {'label': 'Timeline Confirmed Filtered', 'value': 'confirmed_filtered'},
-#         {'label': 'Timeline Doubling Rate', 'value': 'confirmed_DR'},
-#         {'label': 'Timeline Doubling Rate Filtered', 'value': 'confirmed_filtered_DR'},
 
 timelineToCSVMap = {CONFIRMED: CASES_PROCESSED_FILE_PATH, 
                     CONFIRMED_POP: CASES_POP_PROCESSED_FILE_PATH,

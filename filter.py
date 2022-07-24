@@ -1,10 +1,16 @@
+import pandas as pd
 import numpy as np
 from sklearn import linear_model
-reg = linear_model.LinearRegression(fit_intercept=True)
-import pandas as pd
-from paths import *
-
 from scipy import signal
+
+reg = linear_model.LinearRegression(fit_intercept=True)
+
+################################################################
+################################################################
+########## Helper Functions for DataProcessManager.py ##########
+################################################################
+################################################################
+
 
 def get_doubling_time_via_regression(in_array):
     ''' Use a linear regression to approximate the doubling rate
@@ -48,13 +54,15 @@ def savgol_filter(df_input,column='confirmed',window=5):
     degree=1
     df_result=df_input
 
-    filter_in=df_input[column].fillna(0) # attention with the neutral element here
+    filter_in=df_input[column].fillna(0)
 
     result=signal.savgol_filter(np.array(filter_in),
                            window, # window size used for filtering
                            1)
     df_result[str(column+'_filtered')]=result
+
     return df_result
+
 
 def rolling_reg(df_input,col='confirmed'):
     ''' Rolling Regression to approximate the doubling time'
@@ -73,11 +81,7 @@ def rolling_reg(df_input,col='confirmed'):
                 window=days_back,
                 min_periods=days_back).apply(get_doubling_time_via_regression,raw=False)
 
-
-
     return result
-
-
 
 
 def calc_filtered_data(df_input,filter_on='confirmed'):
@@ -101,16 +105,9 @@ def calc_filtered_data(df_input,filter_on='confirmed'):
 
     pd_filtered_result=df_output[['state','country',filter_on]].groupby(['state','country']).apply(savgol_filter)#.reset_index()
 
-    #print('--+++ after group by apply')
-    #print(pd_filtered_result[pd_filtered_result['country']=='Germany'].tail())
-
-    #df_output=pd.merge(df_output,pd_filtered_result[['index',str(filter_on+'_filtered')]],on=['index'],how='left')
     df_output=pd.merge(df_output,pd_filtered_result[[str(filter_on+'_filtered')]],left_index=True,right_index=True,how='left')
-    #print(df_output[df_output['country']=='Germany'].tail())
+
     return df_output.copy()
-
-
-
 
 
 def calc_doubling_rate(df_input,filter_on='confirmed'):
@@ -140,99 +137,4 @@ def calc_doubling_rate(df_input,filter_on='confirmed'):
     df_output=pd.merge(df_input,pd_DR_result[['index',str(filter_on+'_DR')]],left_index=True,right_on=['index'],how='left')
     df_output=df_output.drop(columns=['index'])
 
-
     return df_output
-
-def convertToDesiredFormat():
-    pd_raw=pd.read_csv(CASES_PROCESSED_FILE_PATH, sep=';')
-
-    countryListInOrder = list(pd_raw.columns)
-    countryListInOrder.remove('date')
-    countryListInOrder.remove('Unnamed: 0')
-    dateList = pd_raw['date'].tolist()
-    numberOfRows = len(dateList)
-
-    bigListWithoutColumnNames =[]
-
-
-    for x in range(0,numberOfRows):
-        for countryName in countryListInOrder:
-            bigListWithoutColumnNames.append([dateList[x], np.nan, countryName, pd_raw[countryName][x]])
-            # bigListWithoutColumnNames.append([dateList[x], countryName, pd_raw[countryName][x]])
-
-    df=pd.DataFrame(bigListWithoutColumnNames, columns=['date', 'state','country','confirmed'])
-    df['state']=df['state'].fillna('no')
-    # df=pd.DataFrame(bigListWithoutColumnNames, columns=['date','country','confirmed'])
-    # df.set_index(['state','country'])
-    # df.stack(level=[0,1]).reset_index()
-    df.to_csv(CASES_INTERMEDIARY_FILE_PATH,sep=';',index=False)
-
-
-
-
-def createUIFiles():
-    dataFrame = pd.read_csv(CASES_FILTERING_PROCESSED_FILE_PATH, sep=';', index_col=False)
-    di = (dataFrame.groupby('country')['date', 'confirmed_filtered', 'confirmed_DR', 'confirmed_filtered_DR']
-    .apply(lambda x: dict(zip(range(len(x)),x.values.tolist())))
-    .to_dict())
-
-    listOfFiltered = []
-    listOfDR = []
-    listOfFilteredDR = []
-    
-
-    for eachCountry in di:
-        dateList = []
-        filteredList = []
-        drList = []
-        drFilteredList = []
-
-        countryName = eachCountry
-
-        for i in range(len(di[eachCountry])):
-            dateList.append(di[eachCountry][i][0])
-            filteredList.append(di[eachCountry][i][1])
-            drList.append(di[eachCountry][i][2])
-            drFilteredList.append(di[eachCountry][i][3])
-
-        listOfFiltered.append( pd.DataFrame(
-        {
-            'date'      :   dateList,
-            countryName :   filteredList
-        }))
-        
-        listOfDR.append( pd.DataFrame(
-        {
-            'date'      :   dateList,
-            countryName :   drList
-        }))
-
-        listOfFilteredDR.append( pd.DataFrame(
-        {
-            'date'      :   dateList,
-            countryName :   drFilteredList
-        }))
-        
-
-        dateList.clear()
-        filteredList.clear()
-        drList.clear()
-        drFilteredList.clear()
-    
-    pd.concat(listOfFiltered,                axis=0, ignore_index=True).to_csv(CASES_FILTERED_PROCESSED_FILE_PATH,        sep = ';')
-    pd.concat(listOfDR,                      axis=0, ignore_index=True).to_csv(CASES_DR_PROCESSED_FILE_PATH,    sep = ';')
-    pd.concat(listOfFilteredDR,              axis=0, ignore_index=True).to_csv(CASES_FILTERED_DR_PROCESSED_FILE_PATH,       sep = ';')
-   
-
-def filterData():
-    
-    convertToDesiredFormat()
-    pd_JH_data=pd.read_csv(CASES_INTERMEDIARY_FILE_PATH,sep=';',parse_dates=[0])
-    pd_JH_data=pd_JH_data.sort_values('date',ascending=True).copy()
-    pd_result_larg=calc_filtered_data(pd_JH_data)
-    pd_result_larg=calc_doubling_rate(pd_result_larg)
-    pd_result_larg=calc_doubling_rate(pd_result_larg,'confirmed_filtered')
-    mask=pd_result_larg['confirmed']>100
-    pd_result_larg['confirmed_filtered_DR']=pd_result_larg['confirmed_filtered_DR'].where(mask, other=np.NaN)
-    pd_result_larg.to_csv(CASES_FILTERING_PROCESSED_FILE_PATH,sep=';',index=False)
-    createUIFiles()
