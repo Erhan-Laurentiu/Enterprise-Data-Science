@@ -1,13 +1,16 @@
 import numpy as np
 import pandas as pd
 
-from constantdata import VACCINATION_RAW_FILE_PATH,         \
-                         CASES_DEATHS_RAW_FILE_PATH,        \
-                         POPULATION_RAW_FILE_PATH,          \
-                         PROCESSED_RELATIONAL_INTERMEDIARY, \
-                         PROCESSED_RELATIONAL_FINAL 
-
 from filter import calc_filtered_data, calc_doubling_rate
+from sir import createSIRInitialFile, createSIRProcessedFile
+
+from constantdata import PROCESSED_RELATIONAL_INTERMEDIARY_FILE_PATH,   \
+                         CASES_DEATHS_RAW_FILE_PATH,                    \
+                         POPULATION_RAW_FILE_PATH,                      \
+                         PROCESSED_RELATIONAL_INTERMEDIARY_FILE_PATH,   \
+                         PROCESSED_RELATIONAL_FINAL_FILE_PATH,          \
+                         VACCINATION_RAW_FILE_PATH
+
 
 
 def createProcessedFile():
@@ -22,9 +25,6 @@ def createProcessedFile():
     df_cases_deaths = df_cases_deaths.loc[:,['date','location','total_cases','total_deaths']]
 
     df_final = pd.merge(df_vaccination, df_cases_deaths, on=['date','location'], how='right')
-
-    del(df_vaccination)
-    del(df_cases_deaths)
 
     df_population = pd.read_csv(POPULATION_RAW_FILE_PATH)
     df_population = df_population.loc[:,['entity','population']]
@@ -47,14 +47,7 @@ def createProcessedFile():
 
     df_final['date']=df_final.date.astype('datetime64[ns]')
 
-    df_final.to_csv(PROCESSED_RELATIONAL_INTERMEDIARY,sep=';',index=False)
-
-    #Memory Cleaning Because the DataSets are quite large
-    del(casesPerPop)
-    del(deathsPerPop)
-    del(fullyVaccinatedPerPop)
-    del(df_population)
-    del(df_final)
+    df_final.to_csv(PROCESSED_RELATIONAL_INTERMEDIARY_FILE_PATH,sep=';',index=False)
 
     print("DataProcessManager::createProcessedFile: Finished Processing the Raw Data")
 
@@ -63,7 +56,7 @@ def appendFilterData():
 
     print("DataProcessManager::appendFilterData: Started Processing the Filter Data")
     
-    pd_JH_data=pd.read_csv(PROCESSED_RELATIONAL_INTERMEDIARY,sep=';',parse_dates=[0])
+    pd_JH_data=pd.read_csv(PROCESSED_RELATIONAL_INTERMEDIARY_FILE_PATH,sep=';',parse_dates=[0])
     pd_JH_data=pd_JH_data.sort_values('date',ascending=True).copy()
     pd_JH_data=pd_JH_data.rename(columns={'total_cases' : 'confirmed', 'total_cases_per_pop' : 'confirmed_per_pop'})
 
@@ -73,17 +66,18 @@ def appendFilterData():
 
     mask=pd_result_larg['confirmed']>100
     pd_result_larg['confirmed_filtered_DR']=pd_result_larg['confirmed_filtered_DR'].where(mask, other=np.NaN)
-    pd_result_larg.to_csv(PROCESSED_RELATIONAL_FINAL,sep=';',index=False)
-
-    #Memory Cleaning Because the DataSets are quite large
-    del(mask)
-    del(pd_JH_data)
-    del(pd_result_larg)
+    pd_result_larg.to_csv(PROCESSED_RELATIONAL_FINAL_FILE_PATH,sep=';',index=False)
 
     print("DataProcessManager::appendFilterData: Finished Processing the Filter Data")
 
+
 def processAllData():
+    
     print("DataProcessManager::processAllData: Data Started Being Processing")
+
     createProcessedFile()
     appendFilterData()
+    createSIRInitialFile()
+    createSIRProcessedFile()
+
     print("DataProcessManager::processAllData: Data Finished Being Processing")

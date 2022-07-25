@@ -1,37 +1,31 @@
 from dash_labs.plugins import register_page
 from dash import dcc, html, Input, Output, callback
-import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-
 import sys
 sys.path.append('../EnterpriseDataScienceProject/')
 from constantdata import *
 
-import dash
-dash.__version__
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output,State
-import plotly.graph_objects as go
 
 
 register_page(__name__)
 
 
-df_input_large=pd.read_csv(PROCESSED_RELATIONAL_FINAL,sep=';')
+df_input_large=pd.read_csv(PROCESSED_RELATIONAL_FINAL_FILE_PATH,sep=';')
+
 # Get Rid of Empty Rows in DataSet
 df_input_large = df_input_large.dropna(axis=0, subset=[DEATHS_KEY])
+supportedCountries =  df_input_large[COUNTRY_KEY].unique()
+supportedCountries.sort()
 
 fig = go.Figure()
-
 
 layout = html.Div([
     html.Label('Select Countries'),
     dcc.Dropdown(
         id='deaths_country_drop_down',
-        options = [ {'label': each,'value':each} for each in df_input_large['country'].unique()], 
+        options = supportedCountries, 
         value = DEFAULT_COUNTRIES_LIST,
         multi=True,
         searchable=True,
@@ -89,9 +83,7 @@ def update_figure(country_list, timeline_type):
                                 opacity=0.9,
                                 ine_width=2,
                                 marker_size=4,
-                                name=each
-                        )
-                )
+                                name=each))
 
     return {
         'data' : traces, 

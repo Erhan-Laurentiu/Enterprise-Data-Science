@@ -3,11 +3,13 @@ import numpy as np
 from sklearn import linear_model
 from scipy import signal
 
+from constantdata import CASES_KEY, COUNTRY_KEY, PROCESSED_RELATIONAL_FINAL_FILE_PATH, SIR_FINAL_FILE_PATH
+
 reg = linear_model.LinearRegression(fit_intercept=True)
 
 ################################################################
 ################################################################
-########## Helper Functions for DataProcessManager.py ##########
+###### Helper Filter Functions for DataProcessManager.py #######
 ################################################################
 ################################################################
 
@@ -98,12 +100,12 @@ def calc_filtered_data(df_input,filter_on='confirmed'):
             the result will be joined as a new column on the input data frame
     '''
 
-    must_contain=set(['state','country',filter_on])
+    must_contain=set(['state', 'country', filter_on])
     assert must_contain.issubset(set(df_input.columns)), ' Erro in calc_filtered_data not all columns in data frame'
 
     df_output=df_input.copy() # we need a copy here otherwise the filter_on column will be overwritten
 
-    pd_filtered_result=df_output[['state','country',filter_on]].groupby(['state','country']).apply(savgol_filter)#.reset_index()
+    pd_filtered_result=df_output[['state', 'country', filter_on]].groupby(['state', 'country']).apply(savgol_filter)#.reset_index()
 
     df_output=pd.merge(df_output,pd_filtered_result[[str(filter_on+'_filtered')]],left_index=True,right_index=True,how='left')
 
@@ -133,8 +135,7 @@ def calc_doubling_rate(df_input,filter_on='confirmed'):
     pd_DR_result=pd_DR_result.rename(columns={filter_on:filter_on+'_DR',
                              'level_2':'index'})
 
-    #we do the merge on the index of our big table and on the index column after groupby
-    df_output=pd.merge(df_input,pd_DR_result[['index',str(filter_on+'_DR')]],left_index=True,right_on=['index'],how='left')
+    df_output=pd.merge(df_input,pd_DR_result[['index', str(filter_on+'_DR')]], left_index=True, right_on=['index'], how='left')
     df_output=df_output.drop(columns=['index'])
 
     return df_output

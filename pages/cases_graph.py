@@ -1,37 +1,31 @@
 from dash_labs.plugins import register_page
 from dash import dcc, html, Input, Output, callback
-import plotly.express as px
 import plotly.graph_objects as go
 import pandas as pd
 import numpy as np
-
 import sys
 sys.path.append('../EnterpriseDataScienceProject/')
 from constantdata import *
 
-import dash
-dash.__version__
-import dash_core_components as dcc
-import dash_html_components as html
-from dash.dependencies import Input, Output,State
-import plotly.graph_objects as go
 
 
 register_page(__name__, path="/")
 
-df_input_large=pd.read_csv(PROCESSED_RELATIONAL_FINAL, sep=';')
+
+df_input_large=pd.read_csv(PROCESSED_RELATIONAL_FINAL_FILE_PATH, sep=';')
+
 # Get Rid of Empty Rows in DataSet
 df_input_large = df_input_large.dropna(axis=0, subset=[CASES_KEY])
-
+supportedCountries =  df_input_large[COUNTRY_KEY].unique()
+supportedCountries.sort()
 
 fig = go.Figure()
-
 
 layout = html.Div([
     html.Label('Select Countries'),
     dcc.Dropdown(
         id='cases_country_drop_down',
-        options = [{'label': each,'value':each} for each in df_input_large[COUNTRY_KEY].unique()], 
+        options = supportedCountries, 
         value = DEFAULT_COUNTRIES_LIST, 
         multi=True,
         searchable=True,
@@ -79,8 +73,6 @@ def update_figure(country_list, show_doubling):
                   'title':'Cases of CoronaVirus (log-scale)'
               }
 
-
-    # newCountryList = list( dict.fromkeys(country_list))
     traces = []
     
     for each in country_list:
@@ -91,8 +83,6 @@ def update_figure(country_list, show_doubling):
             df_plot=df_plot[[STATE_KEY,COUNTRY_KEY,CASES_KEY,CASES_POP_KEY,CASES_FILTERED_KEY,CASES_DR_KEY,CASES_FILTERED_DR_KEY,DATE_KEY]].groupby([COUNTRY_KEY,DATE_KEY]).agg(np.mean).reset_index()
         else:
             df_plot=df_plot[[STATE_KEY,COUNTRY_KEY,CASES_KEY,CASES_POP_KEY,CASES_FILTERED_KEY,CASES_DR_KEY,CASES_FILTERED_DR_KEY,DATE_KEY]].groupby([COUNTRY_KEY,DATE_KEY]).agg(np.sum).reset_index()
-       #print(show_doubling)
-
 
         traces.append(dict(x=df_plot.date,
                                 y=df_plot[show_doubling],
@@ -100,9 +90,7 @@ def update_figure(country_list, show_doubling):
                                 opacity=0.9,
                                 ine_width=2,
                                 marker_size=4,
-                                name=each
-                        )
-                )
+                                name=each))
 
     return {
         'data' : traces,

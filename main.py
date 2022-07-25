@@ -1,5 +1,5 @@
 from dataprocessmanager import processAllData
-from gitmanager import get_data_from_github, getDataFromGithub
+from gitmanager import getDataFromGithub
 from uimanager import startApp
 
 getDataFromGithub()
