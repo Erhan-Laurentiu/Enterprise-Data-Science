@@ -3,7 +3,7 @@ import numpy as np
 from sklearn import linear_model
 from scipy import signal
 
-from constantdata import CASES_KEY, COUNTRY_KEY, PROCESSED_RELATIONAL_FINAL_FILE_PATH, SIR_FINAL_FILE_PATH
+from constantdata import *
 
 reg = linear_model.LinearRegression(fit_intercept=True)
 
@@ -100,12 +100,12 @@ def calc_filtered_data(df_input,filter_on='confirmed'):
             the result will be joined as a new column on the input data frame
     '''
 
-    must_contain=set(['state', 'country', filter_on])
+    must_contain=set([STATE_KEY, COUNTRY_KEY, filter_on])
     assert must_contain.issubset(set(df_input.columns)), ' Erro in calc_filtered_data not all columns in data frame'
 
     df_output=df_input.copy() # we need a copy here otherwise the filter_on column will be overwritten
 
-    pd_filtered_result=df_output[['state', 'country', filter_on]].groupby(['state', 'country']).apply(savgol_filter)#.reset_index()
+    pd_filtered_result=df_output[[STATE_KEY, COUNTRY_KEY, filter_on]].groupby([STATE_KEY, COUNTRY_KEY]).apply(savgol_filter)#.reset_index()
 
     df_output=pd.merge(df_output,pd_filtered_result[[str(filter_on+'_filtered')]],left_index=True,right_index=True,how='left')
 
@@ -126,16 +126,16 @@ def calc_doubling_rate(df_input,filter_on='confirmed'):
             the result will be joined as a new column on the input data frame
     '''
 
-    must_contain=set(['state','country',filter_on])
+    must_contain=set([STATE_KEY,COUNTRY_KEY,filter_on])
     assert must_contain.issubset(set(df_input.columns)), ' Erro in calc_filtered_data not all columns in data frame'
 
 
-    pd_DR_result= df_input.groupby(['state','country']).apply(rolling_reg,filter_on).reset_index()
+    pd_DR_result= df_input.groupby([STATE_KEY,COUNTRY_KEY]).apply(rolling_reg,filter_on).reset_index()
 
     pd_DR_result=pd_DR_result.rename(columns={filter_on:filter_on+'_DR',
-                             'level_2':'index'})
+                             'level_2':INDEX_KEY})
 
-    df_output=pd.merge(df_input,pd_DR_result[['index', str(filter_on+'_DR')]], left_index=True, right_on=['index'], how='left')
-    df_output=df_output.drop(columns=['index'])
+    df_output=pd.merge(df_input,pd_DR_result[[INDEX_KEY, str(filter_on+'_DR')]], left_index=True, right_on=[INDEX_KEY], how='left')
+    df_output=df_output.drop(columns=[INDEX_KEY])
 
     return df_output

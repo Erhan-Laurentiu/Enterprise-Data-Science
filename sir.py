@@ -3,10 +3,7 @@ import numpy as np
 from scipy import optimize
 from scipy import integrate
 
-from constantdata import CASES_DEATHS_RAW_FILE_PATH, \
-                        POPULATION_RAW_FILE_PATH,    \
-                        SIR_FINAL_FILE_PATH,         \
-                        SIR_INTERMEDIARY_FILE_PATH
+from constantdata import *
 
 
 
@@ -60,18 +57,18 @@ def createSIRInitialFile():
     print("SIR::createSIRInitialFile: Started Processing the Intermediary SIR File")
 
     dataFrame = pd.read_csv(CASES_DEATHS_RAW_FILE_PATH)
-    di = (dataFrame.groupby('location')['date', 'total_cases']
+    di = (dataFrame.groupby(LOCATION_KEY)[DATE_KEY, 'total_cases']
     .apply(lambda x: dict(zip(range(len(x)), x.values.tolist())))
     .to_dict())
 
-    df_final = list(dict.fromkeys(dataFrame['date'].tolist()));
-    df_final = pd.DataFrame(df_final, columns=['date']).sort_values('date')
+    df_final = list(dict.fromkeys(dataFrame[DATE_KEY].tolist()));
+    df_final = pd.DataFrame(df_final, columns=[DATE_KEY]).sort_values(DATE_KEY)
 
     for eachCountry in di:
         each_df = pd.DataFrame.from_dict(di)[eachCountry]
         each_df = each_df[each_df.notna()]
-        each_df = pd.DataFrame(each_df.to_list(), columns=['date', eachCountry])
-        df_final = pd.merge(df_final, each_df, on='date', how='left')
+        each_df = pd.DataFrame(each_df.to_list(), columns=[DATE_KEY, eachCountry])
+        df_final = pd.merge(df_final, each_df, on=DATE_KEY, how='left')
 
     df_final.to_csv(SIR_INTERMEDIARY_FILE_PATH, sep = ';', index=False)
 
@@ -90,13 +87,13 @@ def createSIRProcessedFile():
     populationDict = dict(zip(countryList, populationList))
 
     df_analyse=pd.read_csv(SIR_INTERMEDIARY_FILE_PATH,sep=';', parse_dates=[0])
-    ydata = np.array(df_analyse['date'][40::])
+    ydata = np.array(df_analyse[DATE_KEY][40::])
     t=np.arange(len(ydata))
 
     df_final = pd.DataFrame(t, columns=['t'])
 
     for each in df_analyse:
-        if each == 'date' or not(each in populationDict):
+        if each == DATE_KEY or not(each in populationDict):
             continue
 
         d = {('t'): np.arange(len(np.array(df_analyse[each][40::]))), 

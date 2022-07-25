@@ -16,6 +16,9 @@ DEFAULT_COUNTRIES_LIST = ["Germany","Portugal","Italy"]
 
 STATE_KEY = 'state'
 COUNTRY_KEY = 'country'
+LOCATION_KEY = 'location'
+INDEX_KEY = 'index'
+POPULATION_KEY = 'population'
 DATE_KEY = 'date'
 CASES_KEY = 'confirmed'
 CASES_POP_KEY = 'confirmed_per_pop'
